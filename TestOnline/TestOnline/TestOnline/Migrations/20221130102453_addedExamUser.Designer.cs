@@ -12,8 +12,8 @@ using TestOnline.Data;
 namespace TestOnline.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20221129211330_initial")]
-    partial class initial
+    [Migration("20221130102453_addedExamUser")]
+    partial class addedExamUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -69,6 +69,35 @@ namespace TestOnline.Migrations
                     b.HasIndex("QuestionId");
 
                     b.ToTable("ExamQuestions");
+                });
+
+            modelBuilder.Entity("TestOnline.Models.Entities.ExamUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ExamUsers");
                 });
 
             modelBuilder.Entity("TestOnline.Models.Entities.Question", b =>
@@ -161,6 +190,25 @@ namespace TestOnline.Migrations
                     b.Navigation("Exam");
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("TestOnline.Models.Entities.ExamUser", b =>
+                {
+                    b.HasOne("TestOnline.Models.Entities.Exam", "Exam")
+                        .WithMany()
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TestOnline.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

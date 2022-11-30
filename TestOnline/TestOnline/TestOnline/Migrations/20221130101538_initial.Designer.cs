@@ -12,8 +12,8 @@ using TestOnline.Data;
 namespace TestOnline.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20221129215445_second-migration")]
-    partial class secondmigration
+    [Migration("20221130101538_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TestOnline.Data;
 using TestOnline.Models.Dtos.User;
 using TestOnline.Models.Entities;
+using TestOnline.Services;
 using TestOnline.Services.IService;
 
 namespace TestOnline.Controllers
@@ -17,11 +18,12 @@ namespace TestOnline.Controllers
         private readonly ILogger<UserController> _logger;
         private readonly IEmailSender _emailSender;
 
-        public UserController(DataContext dbContext, IConfiguration configuration, ILogger<UserController> logger, IEmailSender emailSender, IUserService userService)
+        public UserController(DataContext dbContext, IConfiguration configuration, ILogger<UserController> logger, IUserService userService, IEmailSender emailSender)
         {
             _dbContext = dbContext;
             _logger = logger;
             _userService = userService;
+            _emailSender = emailSender;
         }
 
         [HttpGet("GetUser")]
@@ -54,7 +56,7 @@ namespace TestOnline.Controllers
         //}
 
         [HttpPost("PostUser")]
-        public async Task<IActionResult> Post(UserCreateDto UserToCreate)
+        public async Task<IActionResult> CreateUser(UserCreateDto UserToCreate)
         {
             await _userService.CreateUser(UserToCreate);
 
@@ -78,7 +80,19 @@ namespace TestOnline.Controllers
         }
 
 
-        
-        
+        [HttpPost("RequestToTakeTheExam")]
+        public async Task<IActionResult> RequestToTakeTheExam(int userId, int examId)
+        {
+            await _userService.RequestToTakeTheExam(userId, examId);
+
+            return Ok("Request for taking the exam is created successfully!");
+        }
+
+        [HttpPut("ApproveExam")]
+        public async Task<IActionResult> ApproveExam(int userId, int examId, int adminId)
+        {
+            await _userService.ApproveExam(userId, examId, adminId);
+            return Ok($"The exam request for user with Id:{userId} was approved successfully!");
+        }
     }
 }

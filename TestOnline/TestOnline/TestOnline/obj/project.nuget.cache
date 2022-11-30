@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "743l8iHXpGhSpUi3+s4b4oJiKjHhWSixG/NHBOubCkcwexDAEof9/Q5VCiXO+9PUzKEeCVVndQ5HIy/F/aMOcQ==",
+  "dgSpecHash": "DfxLG6pWBRkVTQyMrAlQUrdvtrKVN/23Q6g88neCLixnEHoop9SRiU0sLnQY9IxbaVtIhPUpf/AUfk31tx+M1A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
+  "projectFilePath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\Backend\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DELL\\.nuget\\packages\\automapper\\12.0.0\\automapper.12.0.0.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\awssdk.core\\3.7.100.23\\awssdk.core.3.7.100.23.nupkg.sha512",

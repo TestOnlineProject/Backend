@@ -51,8 +51,6 @@ namespace TestOnline.Controllers
         {
             var questions = await _examService.GetExamQuestions(id);
             return questions;
-
-
         }
 
         [HttpGet("GetExam")]
@@ -85,6 +83,7 @@ namespace TestOnline.Controllers
             return Ok("Exam created successfully!");
         }
 
+
         [HttpPut("UpdateExam")]
         public async Task<IActionResult> Update(ExamDto ExamToUpdate)
         {
@@ -113,6 +112,13 @@ namespace TestOnline.Controllers
                 _logger.LogError(ex, "Error during the deletion process.");
                 return BadRequest("The exam specified doesnt't exist!");
             }
+        }
+
+        [HttpGet("StartExam")]  
+        public async Task<List<Question>> StartExam(int userId, int examId)
+        {
+            var questions = await _examService.StartExam(userId, examId);
+            return questions;
         }
     }
 }

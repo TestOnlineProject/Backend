@@ -8,8 +8,10 @@ namespace TestOnline.Services.IService
         Task CreateUser(UserCreateDto userToCreate);
         Task DeleteUser(int id);
         Task<List<User>> GetAllUsers();
-        //Task<PagedInfo<User>> UsersListView(string search, int page, int pageSize);
         Task<User> GetUser(int id);
         Task UpdateUser(UserDto userToUpdate);
+        Task RequestToTakeTheExam(int userId, int examId);
+        Task ApproveExam(int userId, int examId, int adminId);
+
     }
 }

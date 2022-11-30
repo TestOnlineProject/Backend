@@ -48,7 +48,7 @@ namespace TestOnline.Helpers
                 new
                 {
                     Message = ex.Message,
-                    Code = "system_error",
+                    Code = "System_Error",
                     StatusCode = context.Response.StatusCode
                 };
 

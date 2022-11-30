@@ -50,39 +50,7 @@ namespace TestOnline.Services
             return questions;
         }
 
-
-        public async Task UpdateExam(ExamDto examToUpdate)
-        {
-            var exam = await GetExam(examToUpdate.ExamId);
-            if (exam == null)
-            {
-                throw new NullReferenceException("The exam you're trying to update doesn't exist!");
-            }
-            exam.Name = examToUpdate.Name;
-
-            _unitOfWork.Repository<Exam>().Update(exam);
-
-            _unitOfWork.Complete();
-        }
-
-        public async Task DeleteExam(int id)
-        {
-            var exam = await GetExam(id);
-            if (exam == null)
-            {
-                throw new NullReferenceException("The exam you're trying to delete doesn't exist.");
-            }
-            var examQuestions = _unitOfWork.Repository<ExamQuestion>().GetAll().Where(x => x.ExamId == id).ToList();
-            foreach (var examQuestion in examQuestions)
-            {
-                _unitOfWork.Repository<ExamQuestion>().Delete(examQuestion);    
-            }
-
-            _unitOfWork.Repository<Exam>().Delete(exam);
-            _unitOfWork.Complete();
-        }
-
-  
+       
         public async Task CreateExam(int nrOfQuestions, string name)
         {
             Exam exam = new Exam { NrQuestions = nrOfQuestions, Name = name, TotalPoints = 0 };
@@ -118,6 +86,57 @@ namespace TestOnline.Services
             _unitOfWork.Repository<Exam>().Create(exam);
             _unitOfWork.Complete();
         }
+
+        
+
+        public async Task UpdateExam(ExamDto examToUpdate)
+        {
+            var exam = await GetExam(examToUpdate.ExamId);
+            if (exam == null)
+            {
+                throw new NullReferenceException("The exam you're trying to update doesn't exist!");
+            }
+            exam.Name = examToUpdate.Name;
+
+            _unitOfWork.Repository<Exam>().Update(exam);
+
+            _unitOfWork.Complete();
+        }
+
+        public async Task DeleteExam(int id)
+        {
+            var exam = await GetExam(id);
+            if (exam == null)
+            {
+                throw new NullReferenceException("The exam you're trying to delete doesn't exist.");
+            }
+
+            // When deleting an exam, also delete all ocurrences of that exam from the ExamQuestion table
+            var examQuestions = _unitOfWork.Repository<ExamQuestion>().GetAll().Where(x => x.ExamId == id).ToList();
+            foreach (var examQuestion in examQuestions)
+            {
+                _unitOfWork.Repository<ExamQuestion>().Delete(examQuestion);    
+            }
+            _unitOfWork.Repository<Exam>().Delete(exam);
+            _unitOfWork.Complete();
+        }
+
+        public async Task<List<Question>> StartExam(int userId, int examId)
+        {
+            var examUser = await _unitOfWork.Repository<ExamUser>().GetAll().Where(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+            if (!examUser.IsApproved)
+            {
+                throw new AccessViolationException("The user can't take the exam since it's not approved!");
+            }
+            examUser.StartTime = DateTime.Now;
+            _unitOfWork.Repository<ExamUser>().Update(examUser);
+            _unitOfWork.Complete();
+            var questions = await GetExamQuestions(examId);
+            return questions;
+        }
+
+
+
         //public async Task<PagedInfo<Exam>> ExamsListView(string search, int page, int pageSize)
         //{
         //    Expression<Func<Exam, bool>> condition = x => x.Name.Contains(search);

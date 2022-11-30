@@ -5062,11 +5062,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
+      "projectUniqueName": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\Backend\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
       "projectName": "TestOnline",
-      "projectPath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
+      "projectPath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\Backend\\TestOnline\\TestOnline\\TestOnline\\TestOnline.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\TestOnline\\TestOnline\\TestOnline\\obj\\",
+      "outputPath": "C:\\Users\\DELL\\Desktop\\Detyra Java 2\\Backend\\TestOnline\\TestOnline\\TestOnline\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
