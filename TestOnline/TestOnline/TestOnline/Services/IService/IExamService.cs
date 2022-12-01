@@ -12,7 +12,9 @@ namespace TestOnline.Services.IService
         Task CreateExam(int nrOfQuestions, string name);
         Task UpdateExam(ExamDto examToUpdate);
         Task<List<Question>> GetExamQuestions(int id);
-        Task<List<Question>> StartExam(int userId, int examId);
+        Task<List<Question>> StartExam(string userId, int examId);
+        Task<double> SubmitExam(int examId, List<int> answers);
+
 
     }
 }

@@ -6,12 +6,14 @@ namespace TestOnline.Services.IService
     public interface IUserService
     {
         Task CreateUser(UserCreateDto userToCreate);
-        Task DeleteUser(int id);
         Task<List<User>> GetAllUsers();
-        Task<User> GetUser(int id);
+        Task<User> GetUser(string id);
+        Task DeleteUser(string id);
         Task UpdateUser(UserDto userToUpdate);
-        Task RequestToTakeTheExam(int userId, int examId);
-        Task ApproveExam(int userId, int examId, int adminId);
+        Task RequestToTakeTheExam(string userId, int examId);
+        Task ApproveExam(string userId, int examId, string adminId);
+        Task<User?> GetByEmail(string email);
+
 
     }
 }

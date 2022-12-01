@@ -1,12 +1,15 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
 using TestOnline.Data;
 using TestOnline.Data.UnitOfWork;
 using TestOnline.Helpers;
 using TestOnline.Helpers.EmailHelpers;
-using TestOnline.Models.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +49,30 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
+builder.Services.Configure<JWTConfiguration>(builder.Configuration.GetSection("JWTConfig"));
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<DataContext>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(jwt =>
+{
+    var key = Encoding.UTF8.GetBytes(builder.Configuration["JWTConfig:Secret"]);
+    jwt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidIssuer = "http://localhost:37997",
+        ValidAudience = "http://localhost:37997",
+        RequireExpirationTime = false
+    };
+});
 
 
 var app = builder.Build();

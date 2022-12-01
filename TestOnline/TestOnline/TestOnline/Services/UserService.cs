@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Crypto;
 using System.Linq.Expressions;
 using TestOnline.Data.UnitOfWork;
@@ -28,7 +29,7 @@ namespace TestOnline.Services
             return users.ToList();
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUser(string id)
         {
             Expression<Func<User, bool>> expression = x => x.UserId == id;
             var user = await _unitOfWork.Repository<User>().GetById(expression).FirstOrDefaultAsync();
@@ -38,7 +39,7 @@ namespace TestOnline.Services
 
         public async Task UpdateUser(UserDto userToUpdate)
         {
-            User user = await GetUser(userToUpdate.UserId);
+            var user = await GetUser(userToUpdate.UserId);
             if (user == null)
             {
                 throw new NullReferenceException("The user specified doesn't exist.");
@@ -52,35 +53,57 @@ namespace TestOnline.Services
             _unitOfWork.Repository<User>().Update(user);
 
             _unitOfWork.Complete();
-        }   
+        }
+
+        public async Task<User?> GetByEmail(string email)
+        {
+            var user = await _unitOfWork.Repository<User>().GetByCondition(x => x.Email == email).FirstOrDefaultAsync();
+            return user;
+        }
 
         public async Task CreateUser(UserCreateDto userToCreate)
         {
             var user = _mapper.Map<User>(userToCreate);
 
-           
             _unitOfWork.Repository<User>().Create(user);
             _logger.LogInformation("Created user successfully!");
             _unitOfWork.Complete();
         }
 
-        public async Task DeleteUser(int id)
+        public async Task DeleteUser(string id)
         {
             var user = await GetUser(id);
             if (user == null)
             {
                 throw new NullReferenceException("The user you're trying to delete doesn't exist.");
             }
-
+            var examUsers = _unitOfWork.Repository<ExamUser>().GetByCondition(x => x.UserId == id);
+            foreach (var examUser in examUsers)
+            {
+                examUser.UserId = null;
+                _unitOfWork.Repository<ExamUser>().Update(examUser);
+            }
             _unitOfWork.Repository<User>().Delete(user);
+
             _logger.LogInformation("Deleted user successfully!");
             _unitOfWork.Complete();
         }
-       
 
-        public async Task RequestToTakeTheExam(int userId, int examId)
+
+        public async Task<ExamUser> GetExamUser(string userId, int examId)
         {
-            var user = await GetUser(examId);
+            var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+            return examUser;
+        }
+
+        public async Task RequestToTakeTheExam(string userId, int examId)
+        {
+            var examUser = await GetExamUser(userId, examId);
+            if (examUser is not null)
+            {
+                throw new Exception("You're not allowed to retake the exam!");
+            }
+            var user = await GetUser(userId);
             if (user == null)
             {
                 throw new NullReferenceException("The user who requested to take the exam is not registered!");
@@ -92,7 +115,7 @@ namespace TestOnline.Services
                 throw new NullReferenceException("The exam specified doesn't exist.");
             }
 
-            ExamUser examUser = new ExamUser
+            examUser = new ExamUser
             {
                 User = user,
                 UserId = userId,
@@ -104,7 +127,8 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
-        public async Task ApproveExam(int userId, int examId, int adminId) // userId is the id of the user who requested to take the exam, adminId is the id of the user who should be admin
+
+        public async Task ApproveExam(string userId, int examId, string adminId) // userId is the id of the user who requested to take the exam, adminId is the id of the user who should be admin
         {
             var applyingUser = await GetUser(userId);
             if (applyingUser == null)
@@ -114,7 +138,7 @@ namespace TestOnline.Services
             var adminUser = await GetUser(adminId);
             if (adminUser.Role == "Admin")
             {
-                var examUser = await _unitOfWork.Repository<ExamUser>().GetAll().Where(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+                var examUser = await GetExamUser(userId, examId);
                 examUser.IsApproved = true;
                 _unitOfWork.Repository<ExamUser>().Update(examUser);
                 _unitOfWork.Complete();

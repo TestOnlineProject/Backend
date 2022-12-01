@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using TestOnline.Data;
@@ -9,25 +11,30 @@ using TestOnline.Services.IService;
 
 namespace TestOnline.Controllers
 {
-    [Route("api")]
     [ApiController]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        private readonly DataContext _dbContext;
         private readonly ILogger<UserController> _logger;
         private readonly IEmailSender _emailSender;
 
-        public UserController(DataContext dbContext, IConfiguration configuration, ILogger<UserController> logger, IUserService userService, IEmailSender emailSender)
+        public UserController(IConfiguration configuration, ILogger<UserController> logger, IUserService userService, IEmailSender emailSender)
         {
-            _dbContext = dbContext;
             _logger = logger;
             _userService = userService;
             _emailSender = emailSender;
         }
 
+        [HttpGet("isAuthenticated")]
+        [AllowAnonymous]
+        public async Task<bool> IsAuthenticated()
+        {
+            return User.Identity.IsAuthenticated;
+        }
+
         [HttpGet("GetUser")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get(string id)
         {
             var user = await _userService.GetUser(id);
 
@@ -72,7 +79,7 @@ namespace TestOnline.Controllers
         }
 
         [HttpDelete("DeleteUser")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
             await _userService.DeleteUser(id);
 
@@ -81,7 +88,7 @@ namespace TestOnline.Controllers
 
 
         [HttpPost("RequestToTakeTheExam")]
-        public async Task<IActionResult> RequestToTakeTheExam(int userId, int examId)
+        public async Task<IActionResult> RequestToTakeTheExam(string userId, int examId)
         {
             await _userService.RequestToTakeTheExam(userId, examId);
 
@@ -89,7 +96,7 @@ namespace TestOnline.Controllers
         }
 
         [HttpPut("ApproveExam")]
-        public async Task<IActionResult> ApproveExam(int userId, int examId, int adminId)
+        public async Task<IActionResult> ApproveExam(string userId, int examId, string adminId)
         {
             await _userService.ApproveExam(userId, examId, adminId);
             return Ok($"The exam request for user with Id:{userId} was approved successfully!");

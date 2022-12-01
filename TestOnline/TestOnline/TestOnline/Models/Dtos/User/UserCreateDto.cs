@@ -14,10 +14,14 @@ namespace TestOnline.Models.Dtos.User
         [EmailAddress, Required]
         public string Email { get; set; }
 
-        [PasswordPropertyText, Required]
+        [Required]
+        public string UserName { get; set; }
+
+        [Required, MaxLength(20)]
         public string Password { get; set; }
 
         public DateTime BirthDate { get; set; }
         public string Location { get; set; }
+        public string Role { get; set; } = "User";
     }
 }

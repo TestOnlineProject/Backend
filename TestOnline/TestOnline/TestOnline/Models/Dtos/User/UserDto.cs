@@ -4,7 +4,7 @@ namespace TestOnline.Models.Dtos.User
 {
     public class UserDto
     {
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         [Required, MaxLength(100)]
         public string FirstName { get; set; }
@@ -14,6 +14,8 @@ namespace TestOnline.Models.Dtos.User
 
         [EmailAddress, Required]
         public string Email { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
         public DateTime BirthDate { get; set; }
         public string Location { get; set; }
         public string Role { get; set; } = "User";

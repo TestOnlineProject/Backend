@@ -7,21 +7,23 @@ using TestOnline.Models.Dtos.Question;
 using TestOnline.Models.Entities;
 using TestOnline.Services.IService;
 using TestOnline.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace TestOnline.Controllers
 {
     [Route("api")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
-        private readonly DataContext _dbContext;
         private readonly ILogger<QuestionController> _logger;
         private readonly IEmailSender _emailSender;
 
-        public QuestionController(DataContext dbContext, ILogger<QuestionController> logger, IEmailSender emailSender, IQuestionService questionService)
+        public QuestionController(ILogger<QuestionController> logger, IEmailSender emailSender, IQuestionService questionService)
         {
-            _dbContext = dbContext;
             _logger = logger;
             _emailSender = emailSender;
             _questionService = questionService;
@@ -53,6 +55,19 @@ namespace TestOnline.Controllers
         {
             await _questionService.CreateQuestion(QuestionToCreate);
             return Ok("Question created successfully!");
+        }
+
+        [HttpPost("CreateQuestions")]
+        public async Task<IActionResult> CreateQuestions(List<QuestionCreateDto> questionsToCreate)
+        {
+            var userClaims = User.Identity as ClaimsIdentity;
+            if (userClaims == null)
+            {
+                throw new Exception("User request is not valid.");
+            }
+            await _questionService.CreateQuestions(questionsToCreate, userClaims);
+            return Ok("Questions were added successfully!");
+
         }
 
         [HttpDelete("DeleteQuestion")]

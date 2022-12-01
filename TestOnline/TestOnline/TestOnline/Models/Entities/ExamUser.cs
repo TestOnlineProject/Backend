@@ -11,7 +11,7 @@ namespace TestOnline.Models.Entities
         public DateTime? StartTime { get; set; } // The time when the user started taking the exam
 
         [ForeignKey("UserId")]
-        public int UserId { get; set; }
+        public string? UserId { get; set; }
         public User User { get; set; }
 
 

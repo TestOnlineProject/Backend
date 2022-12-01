@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using MailKit.Search;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto;
 using System.Linq.Expressions;
@@ -14,13 +16,15 @@ namespace TestOnline.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ExamService> _logger;
+        private readonly IEmailSender _emailSender;
         private readonly IMapper _mapper;
 
-        public ExamService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExamService> logger)
+        public ExamService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExamService> logger, IEmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         public async Task<List<Exam>> GetAllExams()
@@ -43,14 +47,14 @@ namespace TestOnline.Services
             {
                 throw new NullReferenceException("The exam with the specified id doesn't exist.");
             }
-            var questionIds = _unitOfWork.Repository<ExamQuestion>().GetAll().Where(x => x.ExamId == id).Select(x => x.QuestionId).ToList();
+            var questionIds = _unitOfWork.Repository<ExamQuestion>().GetByCondition(x => x.ExamId == id).Select(x => x.QuestionId).ToList();
 
-            var questions = _unitOfWork.Repository<Question>().GetAll().Where(x => questionIds.Contains(x.QuestionId)).ToList();
+            var questions = _unitOfWork.Repository<Question>().GetByCondition(x => questionIds.Contains(x.QuestionId)).ToList();
 
             return questions;
         }
 
-       
+
         public async Task CreateExam(int nrOfQuestions, string name)
         {
             Exam exam = new Exam { NrQuestions = nrOfQuestions, Name = name, TotalPoints = 0 };
@@ -87,7 +91,7 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
-        
+
 
         public async Task UpdateExam(ExamDto examToUpdate)
         {
@@ -112,18 +116,18 @@ namespace TestOnline.Services
             }
 
             // When deleting an exam, also delete all ocurrences of that exam from the ExamQuestion table
-            var examQuestions = _unitOfWork.Repository<ExamQuestion>().GetAll().Where(x => x.ExamId == id).ToList();
+            var examQuestions = _unitOfWork.Repository<ExamQuestion>().GetByCondition(x => x.ExamId == id).ToList();
             foreach (var examQuestion in examQuestions)
             {
-                _unitOfWork.Repository<ExamQuestion>().Delete(examQuestion);    
+                _unitOfWork.Repository<ExamQuestion>().Delete(examQuestion);
             }
             _unitOfWork.Repository<Exam>().Delete(exam);
             _unitOfWork.Complete();
         }
 
-        public async Task<List<Question>> StartExam(int userId, int examId)
+        public async Task<List<Question>> StartExam(string userId, int examId)
         {
-            var examUser = await _unitOfWork.Repository<ExamUser>().GetAll().Where(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+            var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
             if (!examUser.IsApproved)
             {
                 throw new AccessViolationException("The user can't take the exam since it's not approved!");
@@ -134,7 +138,72 @@ namespace TestOnline.Services
             var questions = await GetExamQuestions(examId);
             return questions;
         }
+        public async Task<double> SubmitExam(int examId, List<int> answers)
+        {
+            double points = 0;
+            var exam = await GetExam(examId);
+            var questions = await GetExamQuestions(examId);
+            for (int i = 0; i < questions.Count; i++)
+            {
+                if (questions[i].CorrectAnswer == answers[i])
+                {
+                    points += questions[i].Points;
+                }
+            }
+            double percentage = Math.Round(points / exam.TotalPoints * 100, 2);
+            int grade = 5;
+            if (percentage >= 50 && percentage < 60)
+            {
+                grade = 6;
+            }
+            else if (percentage >= 60 && percentage < 70)
+            {
+                grade = 7;
+            }
+            else if (percentage >= 70 && percentage < 80)
+            {
+                grade = 8;
+            }
+            else if (percentage >= 80 && percentage < 90)
+            {
+                grade = 9;
+            }
+            else if (percentage >= 90 && percentage <= 100)
+            {
+                grade = 10;
+            }
+            //var pathToFile = "Templates/order_confirmation.html";
 
+            //string htmlBody = "";
+            //using (StreamReader streamReader = System.IO.File.OpenText(pathToFile))
+            //{
+            //    htmlBody = streamReader.ReadToEnd();
+            //}
+
+            //double totalPrice = 0;
+            //shoppingCardItems.ForEach(x => totalPrice += x.ProductPrice);
+
+            //var orderIds = orders.Select(x => x.OrderId).ToList();
+
+            ////var totalPrice = shoppingCardItems.Select(x => x.ProductPrice).Sum();
+            //var orderConfirmationDto = new OrderConirmationDto
+            //{
+            //    UserName = "LifeUser",
+            //    OrderDate = DateTime.Now,
+            //    Price = totalPrice,
+            //    OrderId = string.Join(",", orderIds)
+            //};
+
+            //var myData = new[] { "LifeUser", DateTime.Now.ToString(), totalPrice.ToString(), string.Join(",", orderIds) };
+
+            //var content = string.Format(htmlBody, myData);
+
+            //await _emailSender.SendEmailAsync(addressDetails.Email, "OrderConfirmation", content);
+            var content = $"Your exam was submitted successfully.\n Percentage:{percentage}, Grade:{grade}";
+            await _emailSender.SendEmailAsync("jeton.sllamniku@life.gjirafa.com", "Exam Result!", content);
+            _logger.LogInformation("Sending Result email on sumbit.");
+            return percentage;
+        }
 
 
         //public async Task<PagedInfo<Exam>> ExamsListView(string search, int page, int pageSize)

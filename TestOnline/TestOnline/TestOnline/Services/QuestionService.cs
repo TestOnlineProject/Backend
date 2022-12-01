@@ -7,6 +7,11 @@ using TestOnline.Data.UnitOfWork;
 using TestOnline.Models.Dtos.Question;
 using TestOnline.Models.Entities;
 using TestOnline.Services.IService;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using static Amazon.S3.Util.S3EventNotification;
+using TestOnline.Data;
 
 namespace TestOnline.Services
 {
@@ -15,13 +20,24 @@ namespace TestOnline.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
+        private readonly DataContext _dbContext;
 
 
-        public QuestionService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
+
+        public async Task<string> GetRole(ClaimsIdentity userClaims)
+        {
+            var userId = userClaims.Claims.First(x => x.Type.Equals("Id")).Value;
+
+            var user = await _unitOfWork.Repository<User>().GetByCondition(x => x.UserId == userId).FirstOrDefaultAsync();
+            return user.Role;
+        }
+
+        public QuestionService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, DataContext dbContext)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _configuration = configuration;
+            _dbContext = dbContext;
         }
 
         public async Task<Question> GetQuestion(int id)
@@ -38,6 +54,7 @@ namespace TestOnline.Services
             return questions.ToList();
         }
 
+        
         public async Task CreateQuestion(QuestionCreateDto questionToCreate)
         {
             var question = _mapper.Map<Question>(questionToCreate);
@@ -47,6 +64,19 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
+       
+
+        public async Task CreateQuestions(List<QuestionCreateDto> questionsToCreate, ClaimsIdentity userClaims)
+        {
+            var role = await GetRole(userClaims);
+            var questions = _mapper.Map<List<QuestionCreateDto>, List<Question>>(questionsToCreate);
+            if (role != "Admin")
+            {
+                throw new Exception("Permission Denied: Only Admin can create questions.");
+            }
+            _unitOfWork.Repository<Question>().CreateRange(questions);
+            _unitOfWork.Complete();
+        }
         public async Task DeleteQuestion(int id)
         {
             var question = await GetQuestion(id);

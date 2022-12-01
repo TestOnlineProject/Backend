@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestOnline.Models.Dtos.Exam;
@@ -8,6 +10,7 @@ using TestOnline.Services.IService;
 namespace TestOnline.Controllers
 {
     [ApiController]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ExamController : Controller
     {
         private readonly IExamService _examService;
@@ -25,7 +28,7 @@ namespace TestOnline.Controllers
         [HttpGet("Test")]
         public async Task<IActionResult> Test()
         {
-            //await _emailSender.SendEmailAsync("albion.b@gjirafa.com","Hello From Life", "Content");
+            //await _emailSender.SendEmailAsync("albion.b@gjirafa.com", "Hello From Life", "Content");
 
 
             //try
@@ -115,10 +118,19 @@ namespace TestOnline.Controllers
         }
 
         [HttpGet("StartExam")]  
-        public async Task<List<Question>> StartExam(int userId, int examId)
+        public async Task<List<Question>> StartExam(string userId, int examId)
         {
             var questions = await _examService.StartExam(userId, examId);
             return questions;
         }
+
+        [HttpPost("SubmitExam")]
+        public async Task<double> SubmitExam(int examId, List<int> answers)
+        {
+            var result = await _examService.SubmitExam(examId, answers);
+            return result;
+        }
+
+
     }
 }

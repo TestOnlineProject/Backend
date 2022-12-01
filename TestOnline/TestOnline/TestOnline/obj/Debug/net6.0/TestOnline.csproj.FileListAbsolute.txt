@@ -218,3 +218,5 @@ C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\TestOnline.pdb
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\TestOnline.genruntimeconfig.cache
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\ref\TestOnline.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
