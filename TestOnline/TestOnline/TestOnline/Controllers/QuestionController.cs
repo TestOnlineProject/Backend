@@ -15,7 +15,7 @@ namespace TestOnline.Controllers
 {
     [Route("api")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
@@ -28,7 +28,7 @@ namespace TestOnline.Controllers
             _emailSender = emailSender;
             _questionService = questionService;
         }
-
+        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
         [HttpGet("GetQuestion")]
         public async Task<IActionResult> Get(int id)
         {
@@ -42,15 +42,17 @@ namespace TestOnline.Controllers
             return Ok(question);
         }
 
+
+        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("GetQuestions")]
         public async Task<IActionResult> GetQuestions()
         {
             var questions = await _questionService.GetAllQuestions();
-
+            
             return Ok(questions);
         }
-
         [HttpPost("CreateQuestion")]
+        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         public async Task<IActionResult> Create(QuestionCreateDto QuestionToCreate)
         {
             await _questionService.CreateQuestion(QuestionToCreate);
@@ -60,14 +62,16 @@ namespace TestOnline.Controllers
         [HttpPost("CreateQuestions")]
         public async Task<IActionResult> CreateQuestions(List<QuestionCreateDto> questionsToCreate)
         {
-            var userClaims = User.Identity as ClaimsIdentity;
-            if (userClaims == null)
-            {
-                throw new Exception("User request is not valid.");
-            }
-            await _questionService.CreateQuestions(questionsToCreate, userClaims);
-            return Ok("Questions were added successfully!");
+            await _questionService.CreateQuestions(questionsToCreate);
+            return Ok("Questions are created successfully");
 
+        }
+
+        [HttpPost("CreateQuestionsFromFile")]
+        public async Task<IActionResult> CreateQuestionsFromFile(IFormFile file)
+        {
+            await _questionService.CreateQuestionsFromFile(file);
+            return Ok("Questions from file are created successfully!");
         }
 
         [HttpDelete("DeleteQuestion")]
@@ -85,11 +89,24 @@ namespace TestOnline.Controllers
             }
         }
 
+        [HttpPost("UploadImageFromUrl")]
+        public async Task<IActionResult> UploadImageFromUrl(string url, int questionId)
+        {
+            await _questionService.UploadImageFromUrl(url, questionId);
+            return Ok("Image is downloaded and uploaded to blob successfully!");
+        }
+        [HttpPost("UploadImage2")]
+        public async Task<IActionResult> UploadImage2(int questionId, [FromBody] string url)
+        {
+            await _questionService.UploadImage2(url, questionId);
+            return Ok("Image is downloaded and uploaded to blob successfully!");
+        }
+
         [HttpPost("UploadImage")]
         public async Task<IActionResult> UploadImage(IFormFile file, int id)
         {
-            await _questionService.UploadImage(file, id);
-            return Ok("Picture was uploaded sucessfully!");
+            var url =  await _questionService.UploadImage(file, id);
+            return Ok($"Picture was uploaded sucessfully at the url: {url}!");
         }
     }
 }

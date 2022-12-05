@@ -123,9 +123,13 @@ C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Azure.Identity.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Humanizer.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\MailKit.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Internal.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.UI.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.Data.SqlClient.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.dll
@@ -161,6 +165,7 @@ C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\MimeKit.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Mono.TextTemplating.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\BouncyCastle.Crypto.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\SendGrid.dll
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Serilog.dll
@@ -218,5 +223,3 @@ C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\TestOnline.pdb
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\TestOnline.genruntimeconfig.cache
 C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\obj\Debug\net6.0\ref\TestOnline.dll
-C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-C:\Users\DELL\Desktop\Detyra Java 2\Backend\TestOnline\TestOnline\TestOnline\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

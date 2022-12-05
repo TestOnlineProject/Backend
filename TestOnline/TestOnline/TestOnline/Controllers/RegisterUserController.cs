@@ -57,7 +57,7 @@ namespace TestOnline.Controllers
                             UserName = user.UserName,
                             Location = user.Location,
                             BirthDate = user.BirthDate,
-                            
+                            Role = user.Role
                         });
 
                         _unitOfWork.Complete();
@@ -159,6 +159,12 @@ namespace TestOnline.Controllers
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
             var key = Encoding.ASCII.GetBytes(_jwtConfiguration);
+            var myUser = _unitOfWork.Repository<Models.Entities.User>().GetByCondition(x => x.UserId == user.Id).FirstOrDefault();
+            var role = "User";
+            if (myUser != null)
+            {
+                role = myUser.Role;
+            }
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -168,9 +174,10 @@ namespace TestOnline.Controllers
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                    new Claim(ClaimTypes.Role, role)
                 }),
-                Expires = DateTime.Now.AddHours(5),
+                Expires = DateTime.Now.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
                 Issuer = "http://localhost:37997",
                 Audience = "http://localhost:37997"

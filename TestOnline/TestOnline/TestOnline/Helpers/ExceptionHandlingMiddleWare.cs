@@ -19,20 +19,6 @@ namespace TestOnline.Helpers
             try
             {
                 await _requestDelegate(context);
-                //switch(context.Response.StatusCode)
-                //{
-                //    case 400:
-                //        context.Response.Redirect("/Error400");
-                //        break;
-                //    case 404:
-                //        context.Response.Redirect("/Error404");
-                //        break;
-                //    case 500:
-                //        context.Response.Redirect("/Error500");
-                //        break;
-                //    default:
-                //        break;
-                //}
             }
             catch (Exception e)
             {
@@ -44,6 +30,7 @@ namespace TestOnline.Helpers
         private Task HandleException(HttpContext context, Exception ex)
         {
             _logger.LogError(ex.ToString());
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             var errorMessage =
                 new
                 {
@@ -55,7 +42,6 @@ namespace TestOnline.Helpers
             var customResponse = JsonConvert.SerializeObject(errorMessage);
 
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
             return context.Response.WriteAsync(customResponse);
         }

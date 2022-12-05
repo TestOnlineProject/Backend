@@ -58,9 +58,9 @@ namespace TestOnline.Services
         public async Task CreateExam(int nrOfQuestions, string name)
         {
             Exam exam = new Exam { NrQuestions = nrOfQuestions, Name = name, TotalPoints = 0 };
-            Random rand = new Random();
 
             #region Implementimi i Random ne nje menyre tjeter
+            //Random rand = new Random();
             //var questions = new List<Question>();
             //int numberOfQuestions = _unitOfWork.Repository<Question>().GetAll().Count();
             //for (int i = 0; i < nrOfQuestions; i++)
@@ -101,7 +101,7 @@ namespace TestOnline.Services
                 throw new NullReferenceException("The exam you're trying to update doesn't exist!");
             }
             exam.Name = examToUpdate.Name;
-
+            
             _unitOfWork.Repository<Exam>().Update(exam);
 
             _unitOfWork.Complete();

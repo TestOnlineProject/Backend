@@ -18,8 +18,11 @@ namespace TestOnline.Data
             {
                 entity.HasIndex(x => new { x.UserId, x.ExamId }).IsUnique();
             });
+
+            //modelBuilder.Entity<Exam>(entity =>
+            //    entity.OnDelete(DeleteBehavior.ClientSetNull));
         }
-       
+        
 
         public DbSet<Exam> Exams { get; set; }
         public DbSet<User> Users { get; set; }

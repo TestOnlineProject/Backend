@@ -12,9 +12,15 @@ namespace TestOnline.Services.IService
         Task DeleteQuestion(int id);
         Task<List<Question>> GetAllQuestions();
         Task<Question> GetQuestion(int id);
-        Task UploadImage(IFormFile file, int id);
-        Task<PutObjectResponse> UploadToBlob(IFormFile file);
-        Task CreateQuestions(List<QuestionCreateDto> questionsToCreate, ClaimsIdentity userClaims);
+        Task<string> UploadImage(IFormFile? file, int id, string url = null);
+        Task UploadImage2(string url, int questionId);
+        Task CreateQuestions(List<QuestionCreateDto> questionsToCreate);
+        Task UploadImageFromUrl(string url, int questionId);
+        Task CreateQuestionsFromFile(IFormFile file);
+        Task<PutObjectResponse> UploadToBlob(IFormFile? file, string url = null);
+
+
+
 
     }
 }
