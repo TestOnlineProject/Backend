@@ -1,21 +1,13 @@
-﻿using Amazon.S3.Model;
-using Amazon.S3;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using TestOnline.Data;
 using TestOnline.Models.Dtos.Question;
-using TestOnline.Models.Entities;
 using TestOnline.Services.IService;
-using TestOnline.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace TestOnline.Controllers
 {
     [Route("api")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     public class QuestionController : Controller
     {
         private readonly IQuestionService _questionService;
@@ -28,45 +20,45 @@ namespace TestOnline.Controllers
             _emailSender = emailSender;
             _questionService = questionService;
         }
-        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "User")]
+
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("GetQuestion")]
         public async Task<IActionResult> Get(int id)
         {
             var question = await _questionService.GetQuestion(id);
-
             if (question == null)
             {
                 return NotFound();
             }
-
             return Ok(question);
         }
 
-
-        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("GetQuestions")]
         public async Task<IActionResult> GetQuestions()
         {
             var questions = await _questionService.GetAllQuestions();
-            
+
             return Ok(questions);
         }
+
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPost("CreateQuestion")]
-        //[Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
-        public async Task<IActionResult> Create(QuestionCreateDto QuestionToCreate)
+        public async Task<IActionResult> Create(QuestionCreateDto questionToCreate)
         {
-            await _questionService.CreateQuestion(QuestionToCreate);
+            await _questionService.CreateQuestion(questionToCreate);
             return Ok("Question created successfully!");
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPost("CreateQuestions")]
         public async Task<IActionResult> CreateQuestions(List<QuestionCreateDto> questionsToCreate)
         {
             await _questionService.CreateQuestions(questionsToCreate);
             return Ok("Questions are created successfully");
-
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPost("CreateQuestionsFromFile")]
         public async Task<IActionResult> CreateQuestionsFromFile(IFormFile file)
         {
@@ -74,6 +66,7 @@ namespace TestOnline.Controllers
             return Ok("Questions from file are created successfully!");
         }
 
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpDelete("DeleteQuestion")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -89,24 +82,22 @@ namespace TestOnline.Controllers
             }
         }
 
+
         [HttpPost("UploadImageFromUrl")]
-        public async Task<IActionResult> UploadImageFromUrl(string url, int questionId)
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
+        public async Task<IActionResult> UploadImageFromUrl(int questionId, string url)
         {
-            await _questionService.UploadImageFromUrl(url, questionId);
-            return Ok("Image is downloaded and uploaded to blob successfully!");
-        }
-        [HttpPost("UploadImage2")]
-        public async Task<IActionResult> UploadImage2(int questionId, [FromBody] string url)
-        {
-            await _questionService.UploadImage2(url, questionId);
-            return Ok("Image is downloaded and uploaded to blob successfully!");
+            var imageUrl = await _questionService.UploadImageFromUrl(url, questionId);
+            return Ok($"Image is downloaded and uploaded to blob successfully at the url: {imageUrl}");
         }
 
+
         [HttpPost("UploadImage")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         public async Task<IActionResult> UploadImage(IFormFile file, int id)
         {
-            var url =  await _questionService.UploadImage(file, id);
-            return Ok($"Picture was uploaded sucessfully at the url: {url}!");
+            var url = await _questionService.UploadImage(file, id);
+            return Ok($"Picture was uploaded sucessfully at the url: {url}");
         }
     }
 }

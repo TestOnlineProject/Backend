@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Crypto;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using TestOnline.Data.UnitOfWork;
 using TestOnline.Models.Dtos.User;
@@ -15,12 +17,14 @@ namespace TestOnline.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
+        private readonly IEmailSender _emailSender;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserService> logger)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<UserService> logger, IEmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -90,60 +94,25 @@ namespace TestOnline.Services
         }
 
 
-        public async Task<ExamUser> GetExamUser(string userId, int examId)
+       
+    
+        public async Task SendEmailOnRegistration(string email, string firstName)
         {
-            var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
-            return examUser;
+            var pathToFile = "Templates/welcome.html";
+            string htmlBody = "";
+            using (StreamReader streamReader = System.IO.File.OpenText(pathToFile))
+            {
+                htmlBody = streamReader.ReadToEnd();
+            }
+
+            var myData = new[] { email, firstName};
+            var content = string.Format(htmlBody, myData);
+
+            await _emailSender.SendEmailAsync(email, "Welcome to TestOnline!", content);
+            _logger.LogInformation("Sending Result email on sumbit.");
         }
 
-        public async Task RequestToTakeTheExam(string userId, int examId)
-        {
-            var examUser = await GetExamUser(userId, examId);
-            if (examUser is not null)
-            {
-                throw new Exception("You're not allowed to retake the exam!");
-            }
-            var user = await GetUser(userId);
-            if (user == null)
-            {
-                throw new NullReferenceException("The user who requested to take the exam is not registered!");
-            }
-            var exam = await _unitOfWork.Repository<Exam>().GetById(x => x.ExamId == examId).FirstOrDefaultAsync();
-
-            if (exam == null)
-            {
-                throw new NullReferenceException("The exam specified doesn't exist.");
-            }
-
-            examUser = new ExamUser
-            {
-                User = user,
-                UserId = userId,
-
-                Exam = exam,
-                ExamId = examId
-            };
-            _unitOfWork.Repository<ExamUser>().Create(examUser);
-            _unitOfWork.Complete();
-        }
-
-
-        public async Task ApproveExam(string userId, int examId, string adminId) // userId is the id of the user who requested to take the exam, adminId is the id of the user who should be admin
-        {
-            var applyingUser = await GetUser(userId);
-            if (applyingUser == null)
-            {
-                throw new NullReferenceException("The user with the specified id doesn't exist.");
-            }
-            var adminUser = await GetUser(adminId);
-            if (adminUser.Role == "Admin")
-            {
-                var examUser = await GetExamUser(userId, examId);
-                examUser.IsApproved = true;
-                _unitOfWork.Repository<ExamUser>().Update(examUser);
-                _unitOfWork.Complete();
-            }
-        }
+        
 
     }
 }

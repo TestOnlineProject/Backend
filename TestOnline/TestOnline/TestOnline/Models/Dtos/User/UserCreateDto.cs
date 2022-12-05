@@ -22,6 +22,5 @@ namespace TestOnline.Models.Dtos.User
 
         public DateTime BirthDate { get; set; }
         public string Location { get; set; }
-        public string Role { get; set; } = "User";
     }
 }

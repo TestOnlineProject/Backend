@@ -68,8 +68,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidIssuer = "http://localhost:37997",
-        ValidAudience = "http://localhost:37997",
+        ValidIssuer = "http://localhost:43000",
+        ValidAudience = "http://localhost:43000",
         RequireExpirationTime = false
     };
 });

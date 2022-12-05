@@ -26,12 +26,7 @@ namespace TestOnline.Controllers
             _emailSender = emailSender;
         }
 
-        [HttpGet("isAuthenticated")]
-        [AllowAnonymous]
-        public async Task<bool> IsAuthenticated()
-        {
-            return User.Identity.IsAuthenticated;
-        }
+
 
         [HttpGet("GetUser")]
         public async Task<IActionResult> Get(string id)
@@ -40,7 +35,7 @@ namespace TestOnline.Controllers
 
             if (user == null)
             {
-                return NotFound();  
+                return NotFound();
             }
 
             return Ok(user);
@@ -53,14 +48,6 @@ namespace TestOnline.Controllers
 
             return Ok(users);
         }
-
-        //[HttpGet("UsersListView")]
-        //public async Task<IActionResult> UsersListView(string? search, int page = 1, int pageSize = 10)
-        //{
-        //    var users = await _userService.UsersListView(search, page, pageSize);
-
-        //    return Ok(users);
-        //}
 
         [HttpPost("PostUser")]
         public async Task<IActionResult> CreateUser(UserCreateDto UserToCreate)
@@ -87,19 +74,6 @@ namespace TestOnline.Controllers
         }
 
 
-        [HttpPost("RequestToTakeTheExam")]
-        public async Task<IActionResult> RequestToTakeTheExam(string userId, int examId)
-        {
-            await _userService.RequestToTakeTheExam(userId, examId);
-
-            return Ok("Request for taking the exam is created successfully!");
-        }
-
-        [HttpPut("ApproveExam")]
-        public async Task<IActionResult> ApproveExam(string userId, int examId, string adminId)
-        {
-            await _userService.ApproveExam(userId, examId, adminId);
-            return Ok($"The exam request for user with Id:{userId} was approved successfully!");
-        }
+        
     }
 }

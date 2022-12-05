@@ -7,13 +7,14 @@ namespace TestOnline.Services.IService
     {
         Task DeleteExam(int id);
         Task<List<Exam>> GetAllExams();
-        //Task<PagedInfo<Exam>> ExamsListView(string search, int page, int pageSize);
         Task<Exam> GetExam(int id);
         Task CreateExam(int nrOfQuestions, string name);
         Task UpdateExam(ExamDto examToUpdate);
         Task<List<Question>> GetExamQuestions(int id);
         Task<List<Question>> StartExam(string userId, int examId);
-        Task<double> SubmitExam(int examId, List<int> answers);
+        Task<double> SubmitExam(int examId, string userId, List<int> answers);
+        Task RequestToTakeTheExam(string userId, int examId);
+        Task ApproveExam(string userId, int examId);
 
 
     }

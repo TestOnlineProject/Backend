@@ -2,6 +2,7 @@
 using MailKit.Search;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Org.BouncyCastle.Crypto;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
@@ -48,15 +49,17 @@ namespace TestOnline.Services
                 throw new NullReferenceException("The exam with the specified id doesn't exist.");
             }
             var questionIds = _unitOfWork.Repository<ExamQuestion>().GetByCondition(x => x.ExamId == id).Select(x => x.QuestionId).ToList();
-
             var questions = _unitOfWork.Repository<Question>().GetByCondition(x => questionIds.Contains(x.QuestionId)).ToList();
-
             return questions;
         }
 
 
         public async Task CreateExam(int nrOfQuestions, string name)
         {
+            if (nrOfQuestions <= 0)
+            {
+                throw new ArgumentException("The number of questions must be positive!");
+            }
             Exam exam = new Exam { NrQuestions = nrOfQuestions, Name = name, TotalPoints = 0 };
 
             #region Implementimi i Random ne nje menyre tjeter
@@ -72,14 +75,14 @@ namespace TestOnline.Services
 
             var questions = _unitOfWork.Repository<Question>().GetAll().OrderBy(q => Guid.NewGuid()).Take(nrOfQuestions);
 
-            foreach (var question in questions)
+            foreach (var q in questions)
             {
-                exam.TotalPoints += question.Points;
+                exam.TotalPoints += q.Points;
 
                 ExamQuestion examQuestion = new ExamQuestion
                 {
-                    Question = question,
-                    QuestionId = question.QuestionId,
+                    Question = q,
+                    QuestionId = q.QuestionId,
 
                     Exam = exam,
                     ExamId = exam.ExamId
@@ -89,6 +92,7 @@ namespace TestOnline.Services
             }
             _unitOfWork.Repository<Exam>().Create(exam);
             _unitOfWork.Complete();
+            _logger.LogInformation("Created Exam successfully!");
         }
 
 
@@ -101,7 +105,7 @@ namespace TestOnline.Services
                 throw new NullReferenceException("The exam you're trying to update doesn't exist!");
             }
             exam.Name = examToUpdate.Name;
-            
+
             _unitOfWork.Repository<Exam>().Update(exam);
 
             _unitOfWork.Complete();
@@ -125,6 +129,63 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
+        public async Task<ExamUser> GetExamUser(string userId, int examId)
+        {
+            var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+            return examUser;
+        }
+
+        public async Task<User> GetUser(string id)
+        {
+            var user = await _unitOfWork.Repository<User>().GetById(x => x.UserId == id).FirstOrDefaultAsync();
+            return user;
+        }
+
+        public async Task RequestToTakeTheExam(string userId, int examId)
+        {
+            var examUser = await GetExamUser(userId, examId);
+            if (examUser is not null)
+            {
+                throw new Exception("You're not allowed to retake the exam!");
+            }
+            var user = await GetUser(userId);
+            if (user == null)
+            {
+                throw new NullReferenceException("The user who requested to take the exam is not registered!");
+            }
+            var exam = await _unitOfWork.Repository<Exam>().GetById(x => x.ExamId == examId).FirstOrDefaultAsync();
+            if (exam == null)
+            {
+                throw new NullReferenceException("The exam specified doesn't exist.");
+            }
+
+            examUser = new ExamUser
+            {
+                User = user,
+                UserId = userId,
+
+                Exam = exam,
+                ExamId = examId
+            };
+            _unitOfWork.Repository<ExamUser>().Create(examUser);
+            _unitOfWork.Complete();
+        }
+
+
+        public async Task ApproveExam(string userId, int examId)
+        {
+            var applyingUser = await GetUser(userId);
+            if (applyingUser == null)
+            {
+                throw new NullReferenceException("The user with the specified id doesn't exist.");
+            }
+
+            var examUser = await GetExamUser(userId, examId);
+            examUser.IsApproved = true;
+            _unitOfWork.Repository<ExamUser>().Update(examUser);
+            _unitOfWork.Complete();
+
+        }
         public async Task<List<Question>> StartExam(string userId, int examId)
         {
             var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
@@ -138,7 +199,9 @@ namespace TestOnline.Services
             var questions = await GetExamQuestions(examId);
             return questions;
         }
-        public async Task<double> SubmitExam(int examId, List<int> answers)
+
+
+        public async Task<double> SubmitExam(int examId, string userId, List<int> answers )
         {
             double points = 0;
             var exam = await GetExam(examId);
@@ -172,63 +235,23 @@ namespace TestOnline.Services
             {
                 grade = 10;
             }
-            //var pathToFile = "Templates/order_confirmation.html";
+            var pathToFile = "Templates/examResult.html";
 
-            //string htmlBody = "";
-            //using (StreamReader streamReader = System.IO.File.OpenText(pathToFile))
-            //{
-            //    htmlBody = streamReader.ReadToEnd();
-            //}
+            string htmlBody = "";
+            using (StreamReader streamReader = System.IO.File.OpenText(pathToFile))
+            {
+                htmlBody = streamReader.ReadToEnd();
+            }
+            var us = await GetUser(userId);
 
-            //double totalPrice = 0;
-            //shoppingCardItems.ForEach(x => totalPrice += x.ProductPrice);
-
-            //var orderIds = orders.Select(x => x.OrderId).ToList();
-
-            ////var totalPrice = shoppingCardItems.Select(x => x.ProductPrice).Sum();
-            //var orderConfirmationDto = new OrderConirmationDto
-            //{
-            //    UserName = "LifeUser",
-            //    OrderDate = DateTime.Now,
-            //    Price = totalPrice,
-            //    OrderId = string.Join(",", orderIds)
-            //};
-
-            //var myData = new[] { "LifeUser", DateTime.Now.ToString(), totalPrice.ToString(), string.Join(",", orderIds) };
+            // Unkomento keto me poshte per te derguar email, ndoshta mund te kete ndonje error te vogel sepse nuk kam mundur ta testoj per shkak qe nuk mundim te dergojme email perveqse nga gjirafa.
+            //var user = new string[2] { us.Email, us.FirstName };
+            //var myData = new[] { user[0], user[1], DateTime.Now.ToString(), grade.ToString(), percentage.ToString() };
 
             //var content = string.Format(htmlBody, myData);
-
-            //await _emailSender.SendEmailAsync(addressDetails.Email, "OrderConfirmation", content);
-            var content = $"Your exam was submitted successfully.\n Percentage:{percentage}, Grade:{grade}";
-            await _emailSender.SendEmailAsync("jeton.sllamniku@life.gjirafa.com", "Exam Result!", content);
+            //await _emailSender.SendEmailAsync(user[0], "Exam Result!", "Hey");
             _logger.LogInformation("Sending Result email on sumbit.");
             return percentage;
         }
-
-
-        //public async Task<PagedInfo<Exam>> ExamsListView(string search, int page, int pageSize)
-        //{
-        //    Expression<Func<Exam, bool>> condition = x => x.Name.Contains(search);
-
-        //    //var exams1 = _unitOfWork.Repository<Exam>()
-        //    //                                             .GetByConditionPaginated(condition, x => x.ExamId, page, pageSize, false);
-
-        //    var exams = _unitOfWork.Repository<Exam>()
-        //                                                 .GetAll().WhereIf(!string.IsNullOrEmpty(search), condition);
-
-        //    var count = await exams.CountAsync();
-
-        //    var examsPaged = new PagedInfo<Exam>()
-        //    {
-        //        TotalCount = count,
-        //        Page = page,
-        //        PageSize = pageSize,
-        //        Data = await exams
-        //                    .Skip((page - 1) * pageSize)
-        //                    .Take(pageSize).ToListAsync()
-        //    };
-
-        //    return examsPaged;
-        //}
     }
 }

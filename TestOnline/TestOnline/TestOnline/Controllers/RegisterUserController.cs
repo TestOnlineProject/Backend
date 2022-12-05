@@ -53,15 +53,17 @@ namespace TestOnline.Controllers
                             UserId = newUser.Id,
                             FirstName = user.FirstName,
                             LastName = user.LastName,
-                            Email = user.Email, 
+                            Email = user.Email,
                             UserName = user.UserName,
                             Location = user.Location,
                             BirthDate = user.BirthDate,
-                            Role = user.Role
+                     
                         });
 
                         _unitOfWork.Complete();
                         var jwtToken = GenerateJWT(newUser);
+
+                        _userService.SendEmailOnRegistration(user.Email, user.FirstName);
                         return Ok(new ResponseDto
                         {
                             Token = jwtToken,
@@ -174,13 +176,13 @@ namespace TestOnline.Controllers
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(ClaimTypes.Role, role)
                 }),
-                Expires = DateTime.Now.AddHours(2),
+                Expires = DateTime.Now.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
-                Issuer = "http://localhost:37997",
-                Audience = "http://localhost:37997"
+                Issuer = "http://localhost:43000",
+                Audience = "http://localhost:43000"
             };
 
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
