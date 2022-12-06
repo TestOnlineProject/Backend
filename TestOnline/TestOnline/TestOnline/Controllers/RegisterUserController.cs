@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TestOnline.Data;
 using TestOnline.Data.UnitOfWork;
 using TestOnline.Models.Dtos.User;
 using TestOnline.Services.IService;
@@ -57,7 +56,7 @@ namespace TestOnline.Controllers
                             UserName = user.UserName,
                             Location = user.Location,
                             BirthDate = user.BirthDate,
-                     
+
                         });
 
                         _unitOfWork.Complete();
@@ -85,7 +84,7 @@ namespace TestOnline.Controllers
                     {
                         Errors = new List<string>
                         {
-                            "User Already Exists"
+                            "A user with this email already Exists"
                         },
                         Succedded = false
                     });
@@ -111,7 +110,7 @@ namespace TestOnline.Controllers
             {
                 var existingUser = await _userManager.FindByNameAsync(user.UserName);
 
-                if (existingUser == null) // Check if user already exists
+                if (existingUser == null)
                 {
                     return BadRequest(new ResponseDto()
                     {

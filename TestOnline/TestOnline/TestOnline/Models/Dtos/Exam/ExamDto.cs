@@ -7,6 +7,6 @@ namespace TestOnline.Models.Dtos.Exam
     {
         public int ExamId { get; set; }
         public string Name { get; set; }
-       
+
     }
 }

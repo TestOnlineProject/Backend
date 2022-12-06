@@ -6,8 +6,8 @@ namespace TestOnline.Models.Entities
 {
     public class Question
     {
-       
         public int QuestionId { get; set; }
+
         [Required, MaxLength(200)]
         public string ActualQuestion { get; set; }
 
@@ -30,7 +30,5 @@ namespace TestOnline.Models.Entities
         public int Points { get; set; }
 
         public string? ImageSrc { get; set; }
-
-
     }
 }

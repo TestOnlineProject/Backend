@@ -12,12 +12,10 @@ namespace TestOnline.Controllers
     {
         private readonly IQuestionService _questionService;
         private readonly ILogger<QuestionController> _logger;
-        private readonly IEmailSender _emailSender;
 
-        public QuestionController(ILogger<QuestionController> logger, IEmailSender emailSender, IQuestionService questionService)
+        public QuestionController(ILogger<QuestionController> logger, IQuestionService questionService)
         {
             _logger = logger;
-            _emailSender = emailSender;
             _questionService = questionService;
         }
 
@@ -62,8 +60,16 @@ namespace TestOnline.Controllers
         [HttpPost("CreateQuestionsFromFile")]
         public async Task<IActionResult> CreateQuestionsFromFile(IFormFile file)
         {
-            await _questionService.CreateQuestionsFromFile(file);
-            return Ok("Questions from file are created successfully!");
+            try
+            {
+                await _questionService.CreateQuestionsFromFile(file);
+                return Ok("Questions from file are created successfully!");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in creating questions from file.");
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
@@ -78,26 +84,41 @@ namespace TestOnline.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during the deletion process.");
-                return BadRequest("The question specified doesnt't exist!");
+                return BadRequest(ex.Message);
             }
         }
-
 
         [HttpPost("UploadImageFromUrl")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         public async Task<IActionResult> UploadImageFromUrl(int questionId, string url)
         {
-            var imageUrl = await _questionService.UploadImageFromUrl(url, questionId);
-            return Ok($"Image is downloaded and uploaded to blob successfully at the url: {imageUrl}");
+            try
+            {
+                var imageUrl = await _questionService.UploadImageFromUrl(url, questionId);
+                return Ok($"Image is downloaded and uploaded to blob successfully at the url: {imageUrl}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in uploading the image from url.");
+                return BadRequest(ex.Message);
+            }
         }
-
 
         [HttpPost("UploadImage")]
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
-        public async Task<IActionResult> UploadImage(IFormFile file, int id)
+        public async Task<IActionResult> UploadImage(IFormFile file, int questionId)
         {
-            var url = await _questionService.UploadImage(file, id);
-            return Ok($"Picture was uploaded sucessfully at the url: {url}");
+            try
+            {
+                var url = await _questionService.UploadImage(file, questionId);
+                return Ok($"Picture was uploaded sucessfully at the url: {url}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in uploading the image.");
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

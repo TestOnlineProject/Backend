@@ -5,17 +5,15 @@ namespace TestOnline.Services.IService
 {
     public interface IExamService
     {
-        Task DeleteExam(int id);
-        Task<List<Exam>> GetAllExams();
+        Task<List<Question>> GetExamQuestions(int id);
         Task<Exam> GetExam(int id);
+        Task<List<Exam>> GetAllExams();
         Task CreateExam(int nrOfQuestions, string name);
         Task UpdateExam(ExamDto examToUpdate);
-        Task<List<Question>> GetExamQuestions(int id);
-        Task<List<Question>> StartExam(string userId, int examId);
-        Task<double> SubmitExam(int examId, string userId, List<int> answers);
+        Task DeleteExam(int id);
         Task RequestToTakeTheExam(string userId, int examId);
         Task ApproveExam(string userId, int examId);
-
-
+        Task<List<Question>> StartExam(string userId, int examId);
+        Task<double> SubmitExam(int examId, string userId, List<int> answers);
     }
 }

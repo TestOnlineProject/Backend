@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Bcpg.OpenPgp;
-using Org.BouncyCastle.Crypto;
-using System.Diagnostics;
 using System.Linq.Expressions;
 using TestOnline.Data.UnitOfWork;
 using TestOnline.Models.Dtos.User;
@@ -50,9 +47,11 @@ namespace TestOnline.Services
             }
 
             user.FirstName = userToUpdate.FirstName;
+
             user.LastName = userToUpdate.LastName;
+            user.Email = userToUpdate.Email;
+            user.UserName = userToUpdate.UserName;
             user.Location = userToUpdate.Location;
-            user.Role = userToUpdate.Role;
 
             _unitOfWork.Repository<User>().Update(user);
 
@@ -65,14 +64,7 @@ namespace TestOnline.Services
             return user;
         }
 
-        public async Task CreateUser(UserCreateDto userToCreate)
-        {
-            var user = _mapper.Map<User>(userToCreate);
 
-            _unitOfWork.Repository<User>().Create(user);
-            _logger.LogInformation("Created user successfully!");
-            _unitOfWork.Complete();
-        }
 
         public async Task DeleteUser(string id)
         {
@@ -93,9 +85,6 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
-
-       
-    
         public async Task SendEmailOnRegistration(string email, string firstName)
         {
             var pathToFile = "Templates/welcome.html";
@@ -105,14 +94,11 @@ namespace TestOnline.Services
                 htmlBody = streamReader.ReadToEnd();
             }
 
-            var myData = new[] { email, firstName};
+            var myData = new[] { email, firstName };
             var content = string.Format(htmlBody, myData);
-
-            await _emailSender.SendEmailAsync(email, "Welcome to TestOnline!", content);
-            _logger.LogInformation("Sending Result email on sumbit.");
+            // Unkomento keto me poshte per te derguar email, ndoshta mund te kete ndonje error te vogel pasi qe nuk kam mundur ta testoj sepse nuk ishte e mundur te dergojme email perveqse nga gjirafa
+            //await _emailSender.SendEmailAsync(email, "Welcome to TestOnline!", content);
+            //_logger.LogInformation("Sending Result email on submit.");
         }
-
-        
-
     }
 }

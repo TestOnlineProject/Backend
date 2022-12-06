@@ -17,21 +17,11 @@ namespace TestOnline.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ExamService> _logger;
-        private readonly IEmailSender _emailSender;
-        private readonly IMapper _mapper;
 
-        public ExamService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExamService> logger, IEmailSender emailSender)
+        public ExamService(IUnitOfWork unitOfWork, ILogger<ExamService> logger)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _logger = logger;
-            _emailSender = emailSender;
-        }
-
-        public async Task<List<Exam>> GetAllExams()
-        {
-            var exams = _unitOfWork.Repository<Exam>().GetAll();
-            return exams.ToList();
         }
 
         public async Task<Exam> GetExam(int id)
@@ -51,6 +41,12 @@ namespace TestOnline.Services
             var questionIds = _unitOfWork.Repository<ExamQuestion>().GetByCondition(x => x.ExamId == id).Select(x => x.QuestionId).ToList();
             var questions = _unitOfWork.Repository<Question>().GetByCondition(x => questionIds.Contains(x.QuestionId)).ToList();
             return questions;
+        }
+
+        public async Task<List<Exam>> GetAllExams()
+        {
+            var exams = _unitOfWork.Repository<Exam>().GetAll();
+            return exams.ToList();
         }
 
 
@@ -94,7 +90,6 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
             _logger.LogInformation("Created Exam successfully!");
         }
-
 
 
         public async Task UpdateExam(ExamDto examToUpdate)
@@ -171,7 +166,6 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
         }
 
-
         public async Task ApproveExam(string userId, int examId)
         {
             var applyingUser = await GetUser(userId);
@@ -186,9 +180,14 @@ namespace TestOnline.Services
             _unitOfWork.Complete();
 
         }
+
         public async Task<List<Question>> StartExam(string userId, int examId)
         {
             var examUser = await _unitOfWork.Repository<ExamUser>().GetByCondition(x => (x.ExamId == examId && x.UserId == userId)).FirstOrDefaultAsync();
+            if (examUser == null)
+            {
+                throw new NullReferenceException("You should make a request to take the exam first.");
+            }
             if (!examUser.IsApproved)
             {
                 throw new AccessViolationException("The user can't take the exam since it's not approved!");
@@ -200,8 +199,7 @@ namespace TestOnline.Services
             return questions;
         }
 
-
-        public async Task<double> SubmitExam(int examId, string userId, List<int> answers )
+        public async Task<double> SubmitExam(int examId, string userId, List<int> answers)
         {
             double points = 0;
             var exam = await GetExam(examId);
@@ -242,15 +240,19 @@ namespace TestOnline.Services
             {
                 htmlBody = streamReader.ReadToEnd();
             }
-            var us = await GetUser(userId);
+            var user = await _unitOfWork.Repository<User>().GetById(x => x.UserId == userId).FirstOrDefaultAsync();
 
-            // Unkomento keto me poshte per te derguar email, ndoshta mund te kete ndonje error te vogel sepse nuk kam mundur ta testoj per shkak qe nuk mundim te dergojme email perveqse nga gjirafa.
-            //var user = new string[2] { us.Email, us.FirstName };
-            //var myData = new[] { user[0], user[1], DateTime.Now.ToString(), grade.ToString(), percentage.ToString() };
+            if (user is null)
+            {
+                throw new NullReferenceException("There is no user with the given Id.");
+            }
+            var myData = new string[] { user.FirstName, DateTime.Now.ToString(), grade.ToString(), percentage.ToString() };
 
-            //var content = string.Format(htmlBody, myData);
-            //await _emailSender.SendEmailAsync(user[0], "Exam Result!", "Hey");
-            _logger.LogInformation("Sending Result email on sumbit.");
+            var content = string.Format(htmlBody, myData);
+
+            // Unkomento keto me poshte per te derguar email, ndoshta mund te kete ndonje error te vogel pasi qe nuk kam mundur ta testoj sepse nuk ishte e mundur te dergojme email perveqse nga gjirafa.
+            //await _emailSender.SendEmailAsync(user.Email, "Exam Result!", content);
+            //_logger.LogInformation("Sending Result email on submit.");
             return percentage;
         }
     }

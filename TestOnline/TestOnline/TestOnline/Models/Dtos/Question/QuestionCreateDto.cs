@@ -28,6 +28,6 @@ namespace TestOnline.Models.Dtos.Question
         public int Points { get; set; }
 
         public string? ImageSrc { get; set; }
- 
+
     }
 }

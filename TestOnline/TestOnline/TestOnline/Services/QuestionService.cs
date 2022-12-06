@@ -95,6 +95,8 @@ namespace TestOnline.Services
 
             _unitOfWork.Repository<Question>().Delete(question);
             _unitOfWork.Complete();
+            _logger.LogInformation("Deleted question successfully!");
+
         }
 
 
@@ -112,6 +114,8 @@ namespace TestOnline.Services
 
             _unitOfWork.Repository<Question>().Update(question);
             _unitOfWork.Complete();
+            _logger.LogInformation("Uploaded Image of the question successfully!");
+
             return imageUrl;
         }
 
@@ -140,6 +144,9 @@ namespace TestOnline.Services
             }
 
             question.ImageSrc = imageInCdnUrl;
+            _unitOfWork.Repository<Question>().Update(question);
+            _unitOfWork.Complete();
+            _logger.LogInformation("Uploaded Image of the question from Url successfully!");
             return imageInCdnUrl;
         }
 

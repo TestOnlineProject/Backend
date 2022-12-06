@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TestOnline.Data.UnitOfWork;
 using TestOnline.Models.Dtos.Exam;
 using TestOnline.Models.Entities;
 using TestOnline.Services;
@@ -12,54 +14,39 @@ using TestOnline.Services.IService;
 namespace TestOnline.Controllers
 {
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ExamController : Controller
     {
         private readonly IExamService _examService;
         private readonly IQuestionService _questionService;
         private readonly ILogger<ExamController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public ExamController(IExamService examService, ILogger<ExamController> logger, IQuestionService questionService)
+        public ExamController(IExamService examService, ILogger<ExamController> logger, IQuestionService questionService, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _examService = examService;
             _logger = logger;
             _questionService = questionService;
-        }
-
-
-        [HttpGet("Test")]
-        public async Task<IActionResult> Test()
-        {
-            //await _emailSender.SendEmailAsync("albion.b@gjirafa.com", "Hello From Life", "Content");
-
-
-            //try
-            //{
-            int num = 4;
-            int num2 = 0;
-
-            int num3 = num / num2;
-            //}
-            //catch(Exception ex)
-            //{
-            //    _logger.LogError(ex, "Error i LIFE");
-            //    _logger.LogInformation(ex, "Error i LIFE");
-            //    _logger.LogDebug(ex, "Error i LIFE");
-            //}
-
-            return Ok();
-            //return Ok($"{exam} {exam1}");
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("Exam/GetQuestions")]
         public async Task<List<Question>?> GetExamQuestions(int id)
         {
-            var questions = await _examService.GetExamQuestions(id);
-            return questions;
+            try { 
+                var questions = await _examService.GetExamQuestions(id);
+                return questions;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting the exam questions.");
+                return null;
+            }
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         [HttpGet("GetExam")]
         public async Task<IActionResult> Get(int id)
         {
@@ -69,16 +56,36 @@ namespace TestOnline.Controllers
             {
                 return NotFound();
             }
+            if (User.IsInRole("Admin"))
+            {
+                return Ok(exam);
+            }
+            else if (User.IsInRole("User"))
+            {
+                var mapped = _mapper.Map<Exam, ExamDto>(exam);
+                return Ok(mapped);
 
-            return Ok(exam);
+            }
+            return BadRequest("Not Allowed!");
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         [HttpGet("GetExams")]
         public async Task<IActionResult> GetExams()
         {
             var exams = await _examService.GetAllExams();
-            return Ok(exams);
+
+            if (User.IsInRole("Admin"))
+            {
+                return Ok(exams);
+            }
+            else if (User.IsInRole("User"))
+            {
+                var mapped = _mapper.Map<List<Exam>, List<ExamDto>>(exams);
+                return Ok(mapped);
+
+            }
+            return BadRequest("Not Allowed!");
         }
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
@@ -114,16 +121,18 @@ namespace TestOnline.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during the deletion process.");
-                return BadRequest("The exam specified doesnt't exist!");
+                return BadRequest(ex.Message);
             }
         }
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         [HttpPost("RequestToTakeTheExam")]
-        public async Task<IActionResult> RequestToTakeTheExam(string userId, int examId)
+        public async Task<IActionResult> RequestToTakeTheExam(int examId)
         {
             try
             {
+                var claims = User.Identity as ClaimsIdentity;
+                var userId = claims.Claims.First(x => x.Type.Equals("Id")).Value;
                 await _examService.RequestToTakeTheExam(userId, examId);
                 return Ok("Request for taking the exam is created successfully!");
 
@@ -131,12 +140,10 @@ namespace TestOnline.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during the request to take the exam");
-                Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
             }
 
         }
-
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpPut("ApproveExam")]
@@ -150,7 +157,6 @@ namespace TestOnline.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during the approval of exam.");
-                Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -169,7 +175,6 @@ namespace TestOnline.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in the process of starting the exam!");
-                Console.WriteLine(ex.Message);
                 return null;
             }
 
@@ -177,20 +182,19 @@ namespace TestOnline.Controllers
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin, User")]
         [HttpPost("SubmitExam")]
-        public async Task<double> SubmitExam(int examId, List<int> answers)
+        public async Task<IActionResult> SubmitExam(int examId, List<int> answers)
         {
             var claims = User.Identity as ClaimsIdentity;
             var userId = claims.Claims.First(x => x.Type.Equals("Id")).Value;
             try
             {
                 var result = await _examService.SubmitExam(examId, userId, answers);
-                return result;
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in the process of submiting the exam!");
-                Console.WriteLine(ex.Message);
-                return 0.0;
+                return BadRequest(ex.Message);
             }
         }
     }

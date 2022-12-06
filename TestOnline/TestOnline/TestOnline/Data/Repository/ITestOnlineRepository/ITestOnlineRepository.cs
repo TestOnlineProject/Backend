@@ -6,9 +6,6 @@ namespace TestOnline.Data.Repository.ITestOnlineRepository
     public interface ITestOnlineRepository<Tentity> where Tentity : class
     {
         IQueryable<Tentity> GetByCondition(Expression<Func<Tentity, bool>> expression);
-        IQueryable<Tentity> GetByConditionWithIncludes(Expression<Func<Tentity, bool>> expression, string? includeRelations = null);
-
-        //IQueryable<Tentity> GetByConditionPaginated(Expression<Func<Tentity, bool>> expression, Expression<Func<Tentity, object>> orderBy, int page, int pageSize, bool orderByDescending = true);
 
         IQueryable<Tentity> GetAll();
 

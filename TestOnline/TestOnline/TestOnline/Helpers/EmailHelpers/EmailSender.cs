@@ -34,7 +34,7 @@ namespace TestOnline.Helpers.EmailHelpers
             //return Task.CompletedTask;
 
             var client = new SendGridClient(SendGridSecret);
-            var from = new EmailAddress("admin@lifecommerce.com", "LIFE");
+            var from = new EmailAddress("jeton.sllamniku@life.gjirafa.com", "TestOnline");
             var to = new EmailAddress(email);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlMessage);
             return client.SendEmailAsync(msg);

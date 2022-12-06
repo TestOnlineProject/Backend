@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TestOnline.Models.Entities
 {
-    // Model for "Exam has questions" relationship
-    //[PrimaryKey("Id")]
+    // "Exam has questions and question can be in a lot of exams" 
     public class ExamQuestion
     {
         [Key]
@@ -12,11 +11,13 @@ namespace TestOnline.Models.Entities
 
         [ForeignKey("QuestionId")]
         public int QuestionId { get; set; }
+
         public Question Question { get; set; }
 
 
         [ForeignKey("ExamId")]
         public int ExamId { get; set; }
+
         public Exam Exam { get; set; }
 
     }
